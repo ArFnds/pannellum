@@ -24,5 +24,8 @@
   "scripts": {
     "build": "python3 ./utils/build/build.py || python ./utils/build/build.py",
     "test": "python3 ./tests/run_test.py || python ./tests/run_test.py"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
   }
 }

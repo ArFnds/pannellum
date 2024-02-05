@@ -39,7 +39,7 @@ def JScompress(text):
     with os.fdopen(in_tuple[0], 'w') as handle:
         handle.write(text)
     out_tuple = tempfile.mkstemp()
-    os.system("java -jar compiler.jar --language_in=ECMASCRIPT5 --warning_level=QUIET --js %s --js_output_file %s" % (in_tuple[1], out_tuple[1]))
+    os.system("pnpm esbuild --minify %s > %s" % (in_tuple[1], out_tuple[1]))
     with os.fdopen(out_tuple[0], 'r') as handle:
         compressed = handle.read()
     os.unlink(in_tuple[1])
@@ -47,28 +47,29 @@ def JScompress(text):
     return compressed
 
 def cssCompress(text):
-    in_tuple = tempfile.mkstemp()
+    in_tuple = tempfile.mkstemp(".css")
     with os.fdopen(in_tuple[0], 'w') as handle:
         handle.write(text)
     out_tuple = tempfile.mkstemp()
-    os.system("java -jar yuicompressor-2.4.7.jar %s --type css -o %s --charset utf-8 -v" % (in_tuple[1], out_tuple[1]))
+    os.system("pnpm esbuild %s --minify > %s" % (in_tuple[1], out_tuple[1]))
     with os.fdopen(out_tuple[0], 'r') as handle:
         compressed = handle.read()
     os.unlink(in_tuple[1])
     os.unlink(out_tuple[1])
     return compressed
 
-def htmlCompress(text):    
-    in_tuple = tempfile.mkstemp()
-    with os.fdopen(in_tuple[0], 'w') as handle:
-        handle.write(text)
-    out_tuple = tempfile.mkstemp()
-    os.system("java -jar htmlcompressor-1.5.3.jar --remove-intertag-spaces --remove-quotes -o %s %s" % (out_tuple[1], in_tuple[1]))
-    with os.fdopen(out_tuple[0], 'r') as handle:
-        compressed = handle.read()
-    os.unlink(in_tuple[1])
-    os.unlink(out_tuple[1])
-    return compressed
+def htmlCompress(text):
+    return text
+    #in_tuple = tempfile.mkstemp(".html")
+    #with os.fdopen(in_tuple[0], 'w') as handle:
+    #    handle.write(text)
+    #out_tuple = tempfile.mkstemp()
+    #os.system("cat %s > %s" % (in_tuple[1], out_tuple[1]))
+    #with os.fdopen(out_tuple[0], 'r') as handle:
+    #    compressed = handle.read()
+    #os.unlink(in_tuple[1])
+    #os.unlink(out_tuple[1])
+    #return compressed
 
 def addHeaderHTML(text, version):
     text = text.replace('<!DOCTYPE HTML>','');
@@ -115,18 +116,18 @@ def build(files, css, html, filename, release=False):
     print('=' * 40)
     
     css = merge(css)
-    css = css.replace("'img/grab.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grab.svg'),'') + "'")
-    css = css.replace("'img/grabbing.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/grabbing.svg'),'') + "'")
+    css = css.replace("img/grab.svg",  "data:image/svg+xml,%s" % urllib.parse.quote(read('css/img/grab.svg'),'') )
+    css = css.replace("img/grabbing.svg","data:image/svg+xml,%s" % urllib.parse.quote(read('css/img/grabbing.svg'),''))
     with open('../../src/standalone/standalone.css', 'r') as f:
         standalone_css = f.read()
     standalone_css = cssCompress(css + standalone_css)
-    standalone_css = standalone_css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
-    standalone_css = standalone_css.replace("'img/background.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
-    standalone_css = standalone_css.replace("'img/compass.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/compass.svg'),'') + "'")
+    standalone_css = standalone_css.replace("img/sprites.svg","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
+    standalone_css = standalone_css.replace("img/background.svg","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
+    standalone_css = standalone_css.replace("img/compass.svg","'data:image/svg+xml," + urllib.parse.quote(read('css/img/compass.svg'),'') + "'")
     css = cssCompress(css)
-    css = css.replace("'img/sprites.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
-    css = css.replace("'img/background.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
-    css = css.replace("'img/compass.svg'","'data:image/svg+xml," + urllib.parse.quote(read('css/img/compass.svg'),'') + "'")
+    css = css.replace("img/sprites.svg","'data:image/svg+xml," + urllib.parse.quote(read('css/img/sprites.svg'),'') + "'")
+    css = css.replace("img/background.svg","'data:image/svg+xml," + urllib.parse.quote(read('css/img/background.svg'),'') + "'")
+    css = css.replace("img/compass.svg","'data:image/svg+xml," + urllib.parse.quote(read('css/img/compass.svg'),'') + "'")
     
     print('=' * 40)
     print('Compiling', htmlfilename)
