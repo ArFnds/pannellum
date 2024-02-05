@@ -22,7 +22,8 @@
     "viewer"
   ],
   "scripts": {
-    "build": "python3 ./utils/build/build.py || python ./utils/build/build.py",
+    "build": "esbuild ./src/pannellum.js --bundle --loader:.svg=dataurl --minify --outdir=./dist",
+    "build:legacy": "python3 ./utils/build/build.py || python ./utils/build/build.py",
     "test": "python3 ./tests/run_test.py || python ./tests/run_test.py"
   },
   "devDependencies": {
